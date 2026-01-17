@@ -4,13 +4,17 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { BananaDecoration } from "@/components/banana-decoration"
 import { BananaIcon } from "@/components/banana-icon"
+import { UserNav } from "@/components/user-nav"
+import { GoogleSignIn } from "@/components/google-signin"
 import { useState } from "react"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+    <>
+      <GoogleSignIn />
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -27,8 +31,8 @@ export function Header() {
             <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="#showcase" className="text-muted-foreground hover:text-foreground transition-colors">
-              Showcase
+            <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+              Pricing
             </Link>
             <Link href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
               FAQ
@@ -37,12 +41,7 @@ export function Header() {
 
           {/* CTA Button */}
           <div className="hidden md:flex items-center gap-4">
-            <Button variant="outline" size="sm">
-              Log in
-            </Button>
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-accent">
-              Try Free
-            </Button>
+            <UserNav />
           </div>
 
           {/* Mobile Menu Button */}
@@ -62,23 +61,19 @@ export function Header() {
             <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
-            <Link href="#showcase" className="text-muted-foreground hover:text-foreground transition-colors">
-              Showcase
+            <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+              Pricing
             </Link>
             <Link href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">
               FAQ
             </Link>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                Log in
-              </Button>
-              <Button size="sm" className="flex-1 bg-primary text-primary-foreground">
-                Try Free
-              </Button>
+            <div className="flex gap-2 pt-2 border-t border-border">
+              <UserNav />
             </div>
           </nav>
         </div>
       )}
     </header>
+    </>
   )
 }

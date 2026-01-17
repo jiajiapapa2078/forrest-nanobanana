@@ -21,6 +21,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate API key
+    if (!process.env.OPENROUTER_API_KEY) {
+      return NextResponse.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Sending request to OpenRouter API...');
+
     const completion = await openai.chat.completions.create({
       model: "google/gemini-2.5-flash-image",
       messages: [
@@ -44,20 +54,34 @@ export async function POST(request: NextRequest) {
       modalities: ["image", "text"],
     });
 
+    console.log('Received response from OpenRouter API');
+
     const message = completion.choices[0].message;
     
     // Extract generated images from the response
     // @ts-ignore - images field exists but not in types
     const generatedImages = message.images || [];
 
+    console.log('Generated images count:', generatedImages.length);
+
     return NextResponse.json({ 
       result: message.content,
       images: generatedImages 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating image:', error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
+    
+    // Return more detailed error information
+    const errorMessage = error?.message || error?.error?.message || 'Failed to generate image';
+    const statusCode = error?.status || error?.response?.status || 500;
+    
     return NextResponse.json(
-      { error: 'Failed to generate image' },
+      { 
+        error: errorMessage,
+        statusCode: statusCode,
+        details: error?.error || {}
+      },
       { status: 500 }
     );
   }
