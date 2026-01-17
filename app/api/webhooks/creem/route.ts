@@ -3,10 +3,16 @@ import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 
 // Create a Supabase client with service role for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // Verify Creem webhook signature
 function verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
@@ -94,6 +100,12 @@ async function handleCheckoutCompleted(data: any) {
     return;
   }
 
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    console.error('Supabase not configured');
+    return;
+  }
+
   // Update user subscription in database
   const { error } = await supabaseAdmin
     .from('user_subscriptions')
@@ -113,6 +125,12 @@ async function handleCheckoutCompleted(data: any) {
 
 async function handleSubscriptionCreated(data: any) {
   const customerId = data.customer;
+  
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    console.error('Supabase not configured');
+    return;
+  }
   
   // Find user by Creem customer ID and update subscription
   const { data: subscription, error } = await supabaseAdmin
@@ -134,6 +152,12 @@ async function handleSubscriptionCreated(data: any) {
 }
 
 async function handleSubscriptionUpdated(data: any) {
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    console.error('Supabase not configured');
+    return;
+  }
+  
   const { error } = await supabaseAdmin
     .from('user_subscriptions')
     .update({
@@ -150,6 +174,12 @@ async function handleSubscriptionUpdated(data: any) {
 }
 
 async function handleSubscriptionCancelled(data: any) {
+  const supabaseAdmin = getSupabaseAdmin();
+  if (!supabaseAdmin) {
+    console.error('Supabase not configured');
+    return;
+  }
+  
   const { error } = await supabaseAdmin
     .from('user_subscriptions')
     .update({
