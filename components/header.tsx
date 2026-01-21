@@ -6,6 +6,7 @@ import { BananaDecoration } from "@/components/banana-decoration"
 import { BananaIcon } from "@/components/banana-icon"
 import { UserNav } from "@/components/user-nav"
 import { GoogleSignIn } from "@/components/google-signin"
+import { AuthConfigWarning } from "@/components/auth-config-warning"
 import { useState } from "react"
 
 export function Header() {
@@ -14,6 +15,7 @@ export function Header() {
   return (
     <>
       <GoogleSignIn />
+      <AuthConfigWarning />
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">

@@ -40,9 +40,21 @@ export function UserNav() {
   }
 
   const handleSignIn = async () => {
+    console.log('=== Sign In Debug Info ===')
+    console.log('Supabase client exists:', !!supabase)
+    console.log('Environment variables:', {
+      SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET',
+      SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'NOT SET',
+      GOOGLE_CLIENT_ID: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET',
+    })
+    
     if (!supabase) {
       console.error('Supabase client not initialized')
-      alert('Authentication is not configured. Please contact support.')
+      const missingVars = []
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) missingVars.push('NEXT_PUBLIC_SUPABASE_URL')
+      if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) missingVars.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+      
+      alert(`认证配置错误。缺少环境变量: ${missingVars.join(', ')}。\n\n请在部署平台配置这些环境变量后重新部署。`)
       return
     }
     
@@ -59,11 +71,11 @@ export function UserNav() {
       
       if (error) {
         console.error('Error signing in:', error)
-        alert(`Sign in failed: ${error.message}`)
+        alert(`登录失败: ${error.message}\n\n请确保:\n1. Google OAuth已在Supabase中启用\n2. 当前域名已添加到Google Cloud Console\n3. 回调URL已正确配置`)
       }
     } catch (error) {
       console.error('Exception during sign in:', error)
-      alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      alert(`发生错误: ${error instanceof Error ? error.message : '未知错误'}`)
     }
   }
 
