@@ -40,21 +40,30 @@ export function UserNav() {
   }
 
   const handleSignIn = async () => {
-    if (!supabase) return
+    if (!supabase) {
+      console.error('Supabase client not initialized')
+      alert('Authentication is not configured. Please contact support.')
+      return
+    }
     
     try {
+      const redirectUrl = `${window.location.origin}/auth/callback`
+      console.log('Initiating Google sign in with redirect:', redirectUrl)
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectUrl,
         },
       })
       
       if (error) {
         console.error('Error signing in:', error)
+        alert(`Sign in failed: ${error.message}`)
       }
     } catch (error) {
-      console.error('Error signing in:', error)
+      console.error('Exception during sign in:', error)
+      alert(`An error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
