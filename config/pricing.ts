@@ -1,72 +1,93 @@
 // Pricing configuration
-// Update these product IDs to match your Creem products
+// Update these product IDs to match your payment provider
 
 export const PRICING_CONFIG = {
-  // Free plan - no product ID needed
-  free: {
-    priceId: null,
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Perfect for trying out Nano Banana",
+  // Basic plan
+  basic: {
+    name: "Basic",
+    price: "$12",
+    originalPrice: "$180",
+    yearlyPrice: "$144",
+    period: "per month",
+    description: "Perfect for individuals and light users",
+    credits: "2400 credits/year",
+    images: "100 high-quality images/month",
     features: [
-      "10 generations per month",
-      "Basic image editing",
-      "Standard quality output",
-      "Community support",
-      "Watermarked images",
+      "2400 credits/year",
+      "100 high-quality images/month",
+      "All style templates included",
+      "Standard generation speed",
+      "Basic customer support",
+      "JPG/PNG format downloads",
+      "Commercial Use License",
     ],
     cta: "Get Started",
     popular: false,
+    paypalLink: null, // Free or contact sales
   },
 
-  // Pro plan - update this with your Creem product ID
+  // Pro plan - Most Popular
   pro: {
-    priceId: "prod_7FzF15t0gCnP2awwIzuYNH", // Creem 产品 ID
     name: "Pro",
-    price: "$19",
+    price: "$19.50",
+    originalPrice: "$468",
+    yearlyPrice: "$234",
     period: "per month",
-    description: "For professionals and creators",
+    description: "For professional creators and teams",
+    credits: "9600 credits/year",
+    images: "400 high-quality images/month",
     features: [
-      "500 generations per month",
-      "Advanced image editing",
-      "High quality output",
-      "Priority support",
-      "No watermarks",
-      "Commercial license",
-      "API access",
+      "9600 credits/year",
+      "400 high-quality images/month",
+      "Support Seedream-4 Model",
+      "Support Nanobanana-Pro Model",
+      "All style templates included",
+      "Priority generation queue",
+      "Priority customer support",
+      "JPG/PNG/WebP format downloads",
+      "Batch generation feature",
+      "Image editing tools (Coming soon)",
+      "Commercial Use License",
     ],
-    cta: "Start Pro Trial",
+    cta: "Start Pro Plan",
     popular: true,
+    paypalLink: "https://www.paypal.com/ncp/payment/A8QJ6MZG7TU84",
+    badge: "⚡ SAVE 50%",
   },
 
-  // Enterprise plan - update this with your Creem product ID
-  enterprise: {
-    priceId: "prod_7FzF15t0gCnP2awwIzuYNH", // Creem 产品 ID (与Pro相同，联系销售时使用)
-    name: "Enterprise",
-    price: "$99",
+  // Max plan
+  max: {
+    name: "Max",
+    price: "$80",
+    originalPrice: "$1920",
+    yearlyPrice: "$960",
     period: "per month",
-    description: "For teams and businesses",
+    description: "Designed for large enterprises and professional studios",
+    credits: "43200 credits/year",
+    images: "1800 high-quality images/month",
     features: [
-      "Unlimited generations",
-      "Advanced image editing",
-      "Ultra quality output",
-      "24/7 dedicated support",
-      "No watermarks",
-      "Extended commercial license",
-      "API access",
-      "Custom integrations",
-      "Team collaboration",
-      "Priority processing",
+      "43200 credits/year",
+      "1800 high-quality images/month",
+      "Support Seedream-4 Model",
+      "Support Nanobanana-Pro Model",
+      "All style templates included",
+      "Fastest generation speed",
+      "Dedicated account manager",
+      "All format downloads",
+      "Batch generation feature",
+      "Professional editing suite (Coming soon)",
+      "Commercial Use License",
     ],
     cta: "Contact Sales",
     popular: false,
+    paypalLink: null, // Contact sales
+    badge: "⚡ SAVE 50%",
   },
 }
 
 // Export as array for easy iteration
 export const pricingPlans = [
-  PRICING_CONFIG.free,
+  PRICING_CONFIG.basic,
   PRICING_CONFIG.pro,
-  PRICING_CONFIG.enterprise,
+  PRICING_CONFIG.max,
 ]

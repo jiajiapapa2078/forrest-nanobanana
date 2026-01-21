@@ -8,107 +8,145 @@ import { BananaDecoration } from "@/components/banana-decoration"
 import { pricingPlans } from "@/config/pricing"
 
 export function Pricing() {
-  const [isLoading, setIsLoading] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly")
 
-  const handleSubscribe = async (priceId: string | null, planName: string) => {
-    // Clear any previous errors
-    setError(null)
-
-    if (!priceId) {
-      // Free plan - just redirect to editor (no loading state needed)
+  const handleSubscribe = (plan: typeof pricingPlans[0]) => {
+    if (plan.name === "Basic") {
+      // Redirect to editor for basic plan
       window.location.href = "#editor"
       return
     }
 
-    if (planName === "Enterprise") {
-      // Contact sales (no loading state needed)
+    if (plan.name === "Max" || !plan.paypalLink) {
+      // Contact sales for Max plan
       window.location.href = "mailto:sales@nanobanana.ai"
       return
     }
 
-    // For Pro plan, use direct Creem payment link
-    // Format: https://www.creem.io/test/payment/{product_id}
-    const paymentUrl = `https://www.creem.io/test/payment/${priceId}`
-    window.location.href = paymentUrl
+    // Redirect to PayPal for Pro plan
+    if (plan.paypalLink) {
+      window.open(plan.paypalLink, "_blank")
+    }
   }
 
   return (
-    <section id="pricing" className="py-20 relative overflow-hidden">
+    <section id="pricing" className="py-20 relative overflow-hidden bg-gradient-to-b from-background to-secondary/20">
       {/* Banana decorations */}
       <BananaDecoration className="absolute top-20 left-8 opacity-30 -rotate-12 hidden lg:block" size="lg" />
       <BananaDecoration className="absolute bottom-20 right-8 opacity-25 rotate-45 hidden lg:block" size="md" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-semibold text-accent uppercase tracking-wide mb-2">Pricing</h2>
-          <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+        <div className="text-center mb-12">
+          <div className="inline-block bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            🍌 Limited Time: Save 50% with Annual Billing
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Choose Your Perfect Plan
-          </h3>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Start free and scale as you grow. All plans include our powerful AI image editing capabilities.
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Unlimited creativity starts here
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="max-w-2xl mx-auto mb-8 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-destructive text-center text-sm">{error}</p>
+        {/* Billing Toggle */}
+        <div className="flex justify-center mb-12">
+          <div className="inline-flex items-center bg-secondary rounded-full p-1">
+            <button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                billingCycle === "monthly"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                billingCycle === "yearly"
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Yearly (Save 50%)
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-16">
           {pricingPlans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative border-border bg-card hover:shadow-xl transition-all duration-300 ${
-                plan.popular ? "ring-2 ring-primary scale-105" : ""
+              className={`relative border-2 bg-card hover:shadow-2xl transition-all duration-300 ${
+                plan.popular
+                  ? "border-primary scale-105 shadow-xl"
+                  : "border-border hover:border-primary/50"
               }`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-6 py-1.5 rounded-full text-sm font-bold shadow-lg">
                   Most Popular
                 </div>
               )}
-              <CardHeader className="text-center pb-8 pt-8">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <BananaIcon size={32} />
+              
+              {plan.badge && (
+                <div className="absolute -top-3 -right-3 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-bold shadow-lg rotate-12">
+                  {plan.badge}
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground mb-2">{plan.name}</CardTitle>
-                <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                <div className="flex items-baseline justify-center gap-2">
-                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">/ {plan.period}</span>
-                </div>
+              )}
+
+              <CardHeader className="text-center pb-6 pt-8">
+                <CardTitle className="text-2xl font-bold text-foreground mb-2">
+                  {plan.name}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+                
+                {billingCycle === "yearly" ? (
+                  <div className="space-y-2">
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-5xl font-bold text-foreground">{plan.price}</span>
+                      <span className="text-muted-foreground">/ {plan.period}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="line-through text-muted-foreground">{plan.originalPrice}</span>
+                      <span className="text-primary font-bold ml-2">{plan.yearlyPrice}/year</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline justify-center gap-2">
+                    <span className="text-5xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground">/ {plan.period}</span>
+                  </div>
+                )}
               </CardHeader>
+
               <CardContent className="space-y-6">
+                <div className="bg-primary/5 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-primary">{plan.credits}</div>
+                  <div className="text-sm text-muted-foreground mt-1">{plan.images}</div>
+                </div>
+
                 <ul className="space-y-3">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
-                      <BananaIcon size={16} className="mt-1 flex-shrink-0" />
+                      <BananaIcon size={16} className="mt-1 flex-shrink-0 text-primary" />
                       <span className="text-sm text-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
+
                 <Button
-                  onClick={() => handleSubscribe(plan.priceId, plan.name)}
-                  disabled={isLoading === plan.priceId}
-                  className={`w-full ${
+                  onClick={() => handleSubscribe(plan)}
+                  className={`w-full py-6 text-base font-semibold ${
                     plan.popular
-                      ? "bg-primary text-primary-foreground hover:bg-accent"
+                      ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg"
                       : "bg-secondary text-foreground hover:bg-secondary/80"
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  }`}
                 >
-                  {isLoading === plan.priceId ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    plan.cta
-                  )}
+                  {plan.cta}
                 </Button>
               </CardContent>
             </Card>
@@ -116,14 +154,57 @@ export function Pricing() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-20 text-center">
-          <h4 className="text-xl font-semibold text-foreground mb-4">Have questions?</h4>
-          <p className="text-muted-foreground mb-6">
-            Check out our <a href="#faq" className="text-primary hover:underline">FAQ section</a> or{" "}
-            <a href="mailto:support@nanobanana.ai" className="text-primary hover:underline">
-              contact our support team
-            </a>
-          </p>
+        <div className="mt-20 max-w-4xl mx-auto">
+          <h3 className="text-3xl font-bold text-center text-foreground mb-12">
+            Frequently Asked Questions
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-foreground">
+                What are credits and how do they work?
+              </h4>
+              <p className="text-muted-foreground">
+                2 credits generate 1 high-quality image. Credits are automatically refilled at the start of each billing cycle - monthly for monthly plans, all at once for yearly plans.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-foreground">
+                Can I change my plan anytime?
+              </h4>
+              <p className="text-muted-foreground">
+                Yes, you can upgrade or downgrade your plan at any time. Upgrades take effect immediately, while downgrades take effect at the next billing cycle.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-foreground">
+                Do unused credits roll over?
+              </h4>
+              <p className="text-muted-foreground">
+                Monthly plan credits do not roll over to the next month. Yearly plan credits are valid for the entire subscription period.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="text-lg font-semibold text-foreground">
+                What payment methods are supported?
+              </h4>
+              <p className="text-muted-foreground">
+                We support PayPal and various other payment methods. All payments are processed through secure third-party payment platforms.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <p className="text-muted-foreground mb-4">
+              Have more questions? We're here to help
+            </p>
+            <Button variant="outline" asChild>
+              <a href="mailto:support@nanobanana.ai">Contact Support</a>
+            </Button>
+          </div>
         </div>
       </div>
     </section>
