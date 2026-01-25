@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { imageUploadSchema } from '@/lib/validation';
+import { createErrorResponse, UnauthorizedError, RateLimitError, ValidationError } from '@/lib/error-handler';
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -13,7 +16,13 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    // 验证用户登录状态
+    // 1. 速率限制检查 (10次/分钟)
+    const rateLimitResult = await checkRateLimit(request, 10);
+    if (!rateLimitResult.success) {
+      throw new RateLimitError(rateLimitResult.error);
+    }
+
+    // 2. 验证用户登录状态
     const supabase = await createClient();
     if (!supabase) {
       return NextResponse.json(
@@ -25,21 +34,23 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Please sign in to use the image editor' },
-        { status: 401 }
-      );
+      throw new UnauthorizedError('Please sign in to use the image editor');
     }
 
     console.log('Authenticated user:', user.email);
 
-    const { image, prompt } = await request.json();
+    // 3. 输入验证
+    const body = await request.json();
+    const validationResult = imageUploadSchema.safeParse(body);
+    
+    if (!validationResult.success) {
+      throw new ValidationError('Invalid input data', validationResult.error.errors);
+    }
+
+    const { image, prompt } = validationResult.data;
 
     if (!image || !prompt) {
-      return NextResponse.json(
-        { error: 'Image and prompt are required' },
-        { status: 400 }
-      );
+      throw new ValidationError('Image and prompt are required');
     }
 
     // Validate API key
@@ -90,20 +101,6 @@ export async function POST(request: NextRequest) {
       images: generatedImages 
     });
   } catch (error: any) {
-    console.error('Error generating image:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-    
-    // Return more detailed error information
-    const errorMessage = error?.message || error?.error?.message || 'Failed to generate image';
-    const statusCode = error?.status || error?.response?.status || 500;
-    
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        statusCode: statusCode,
-        details: error?.error || {}
-      },
-      { status: 500 }
-    );
+    return createErrorResponse(error);
   }
 }

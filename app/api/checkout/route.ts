@@ -1,15 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { createErrorResponse, UnauthorizedError, RateLimitError, ValidationError } from '@/lib/error-handler';
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. 速率限制检查 (3次/分钟 - 防止支付滥用)
+    const rateLimitResult = await checkRateLimit(request, 3);
+    if (!rateLimitResult.success) {
+      throw new RateLimitError(rateLimitResult.error);
+    }
+
     const { priceId, planName } = await request.json();
 
     if (!priceId || !planName) {
-      return NextResponse.json(
-        { error: 'Price ID and plan name are required' },
-        { status: 400 }
-      );
+      throw new ValidationError('Price ID and plan name are required');
     }
 
     // Get the current user
@@ -24,10 +29,7 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Please sign in to subscribe' },
-        { status: 401 }
-      );
+      throw new UnauthorizedError('Please sign in to subscribe');
     }
 
     // Create Creem checkout session
@@ -98,10 +100,6 @@ export async function POST(request: NextRequest) {
       sessionId: checkoutSession.id,
     });
   } catch (error) {
-    console.error('Error creating checkout session:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return createErrorResponse(error);
   }
 }
