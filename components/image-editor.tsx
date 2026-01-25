@@ -2,14 +2,19 @@
 
 import type React from "react"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { BananaIcon } from "@/components/banana-icon"
+import { LoginWall } from "@/components/login-wall"
+import { createClient } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
 import Image from "next/image"
 
 export function ImageEditor() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [prompt, setPrompt] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
@@ -17,6 +22,44 @@ export function ImageEditor() {
   const [generatedImages, setGeneratedImages] = useState<string[]>([])
   const [generatedText, setGeneratedText] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const supabase = createClient()
+
+  // 检查用户登录状态
+  useEffect(() => {
+    const checkUser = async () => {
+      if (!supabase) {
+        setLoading(false)
+        return
+      }
+      
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+
+    checkUser()
+
+    // 监听登录状态变化
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (_event, session) => {
+          setUser(session?.user ?? null)
+          
+          // 登录成功后滚动到编辑器
+          if (session?.user) {
+            setTimeout(() => {
+              document.getElementById('editor')?.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+              })
+            }, 500)
+          }
+        }
+      )
+
+      return () => subscription.unsubscribe()
+    }
+  }, [supabase])
 
   const handleImageUpload = (file: File) => {
     if (file && file.type.startsWith("image/")) {
@@ -97,12 +140,39 @@ export function ImageEditor() {
     }
   }
 
+  // 显示加载状态
+  if (loading) {
+    return (
+      <section id="editor" className="py-20 bg-secondary/50">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading editor...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // 未登录显示登录墙
+  if (!user) {
+    return <LoginWall />
+  }
+
+  // 已登录显示完整编辑器
   return (
     <section id="editor" className="py-20 bg-secondary/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section Header with Welcome Message */}
         <div className="text-center mb-12">
-          <h2 className="text-sm font-semibold text-accent uppercase tracking-wide mb-2">Get Started</h2>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h2 className="text-sm font-semibold text-accent uppercase tracking-wide">Get Started</h2>
+            {user && (
+              <span className="text-sm text-muted-foreground">
+                • Welcome back, {user.user_metadata?.full_name || user.email?.split('@')[0]}! 👋
+              </span>
+            )}
+          </div>
           <h3 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Try The AI Editor</h3>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Experience the power of Nano Banana&apos;s natural language image editing. Transform any photo with simple
@@ -260,6 +330,13 @@ export function ImageEditor() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Usage Tips */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            💡 <span className="font-medium">Pro tip:</span> Try prompts like &quot;make it more colorful&quot;, &quot;add a sunset background&quot;, or &quot;change to watercolor style&quot;
+          </p>
         </div>
       </div>
     </section>

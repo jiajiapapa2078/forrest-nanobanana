@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { createClient } from '@/lib/supabase/server';
 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -12,6 +13,26 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
+    // 验证用户登录状态
+    const supabase = await createClient();
+    if (!supabase) {
+      return NextResponse.json(
+        { error: 'Authentication not configured' },
+        { status: 500 }
+      );
+    }
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Please sign in to use the image editor' },
+        { status: 401 }
+      );
+    }
+
+    console.log('Authenticated user:', user.email);
+
     const { image, prompt } = await request.json();
 
     if (!image || !prompt) {
