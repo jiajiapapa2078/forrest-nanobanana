@@ -9,31 +9,62 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/api/',           // 禁止爬取API路由
-          '/auth/',          // 禁止爬取认证路由
+          '/api/',           // 禁止爬取API路由 (保护后端)
+          '/auth/',          // 禁止爬取认证路由 (安全)
           '/_next/',         // 禁止爬取Next.js内部文件
           '/debug',          // 禁止爬取调试页面
         ],
       },
+      // 允许AI爬虫访问以增加曝光率和流量
       {
         userAgent: 'GPTBot',  // OpenAI爬虫
-        disallow: '/',        // 禁止AI训练使用
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/_next/',
+          '/debug',
+        ],
       },
       {
-        userAgent: 'ChatGPT-User',
-        disallow: '/',
-      },
-      {
-        userAgent: 'CCBot',   // Common Crawl
-        disallow: '/',
+        userAgent: 'ChatGPT-User',  // ChatGPT浏览
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/_next/',
+          '/debug',
+        ],
       },
       {
         userAgent: 'anthropic-ai',  // Claude爬虫
-        disallow: '/',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/_next/',
+          '/debug',
+        ],
       },
       {
-        userAgent: 'Claude-Web',
-        disallow: '/',
+        userAgent: 'Claude-Web',  // Claude浏览
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/_next/',
+          '/debug',
+        ],
+      },
+      {
+        userAgent: 'Google-Extended',  // Google AI训练
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/auth/',
+          '/_next/',
+          '/debug',
+        ],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
